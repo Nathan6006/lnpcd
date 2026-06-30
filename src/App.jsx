@@ -349,7 +349,7 @@ function DetailDrawer({ d, onClose }) {
           <div className="readout-meta">
             {field("Cell line", d.cell)}
             {field("Cargo", d.cargo)}
-            {field("Lipid : RNA", d.lipidToRNA != null ? d.lipidToRNA.toFixed(2) + " w/w" : "—", true)}
+            {field("Formulation ID", d.formulation, true)}
           </div>
         </div>
 
@@ -358,7 +358,7 @@ function DetailDrawer({ d, onClose }) {
           {field("Ionizable lipid", d.ionizable)}
           {field("Helper lipid", d.helper)}
           {field("Molar ratio (ion:phos:chol:PEG)", d.ratio, true)}
-          {field("Formulation ID", d.formulation, true)}
+          {field("Lipid : nucleic acid", d.lipidToRNA != null ? d.lipidToRNA.toFixed(2) + " w/w" : "—", true)}
         </div>
 
         <h4>Structural features</h4>
