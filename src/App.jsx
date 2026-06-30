@@ -128,10 +128,10 @@ const SCHEMA = [
   ["unnormalized_toxicity",             "number", "Cell viability % vs. untreated control", "req"],
   ["Experiment_ID",                     "string", "Study identifier linking records to a publication", "req"],
   ["paper_link",                        "URL",    "DOI / journal link to source paper", "req"],
-  ["Num_tails",                         "number", "Number of lipid tails on the ionizable lipid", "opt"],
-  ["Num_carbon_in_tail",               "number", "Carbon count per tail", "opt"],
-  ["num_unsaturated_cc_bonds",         "number", "Total C=C bonds across all tails", "opt"],
-  ["num_protonatable_nitrogens",       "number", "Count of ionizable nitrogen atoms", "opt"],
+  ["Num_tails",                         "number", "Number of lipid tails on the ionizable lipid", "req"],
+  ["Num_carbon_in_tail",               "number", "Carbon count per tail", "req"],
+  ["num_unsaturated_cc_bonds",         "number", "Total C=C bonds across all tails", "req"],
+  ["num_protonatable_nitrogens",       "number", "Count of ionizable nitrogen atoms", "req"],
 ];
 
 function Pill({ children, tone = "ink" }) {
@@ -545,8 +545,7 @@ function DocsView() {
     <section className="docs">
       <div className="docs-main">
         <h2>Schema</h2>
-        <p className="lede">Every record reconciles one viability readout to its full formulation
-          and assay context. Twelve fields; the structure–condition–readout triplet is the unit.</p>
+        <p className="lede">Every record reconciles one viability readout to its full formulation and assay context.</p>
         <table className="schema">
           <thead><tr><th>Field</th><th>Type</th><th>Description</th><th></th></tr></thead>
           <tbody>
@@ -579,7 +578,6 @@ function DocsView() {
         <div className="cite">
           <span className="cite-label">Export</span>
           <button className="btn btn-solid sm full" onClick={downloadDataset}><Download size={13} /> Full CSV</button>
-          <button className="btn btn-ghost sm full" onClick={downloadJSON}>ML-ready splits (JSON)</button>
         </div>
       </aside>
     </section>
