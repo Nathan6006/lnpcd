@@ -218,8 +218,10 @@ function Hero({ setView }) {
       </div>
       <div className="hero-plate"><WellPlate /></div>
       <div className="stat-strip">
-        {stats.map(([n, l]) => (
-          <div className="stat" key={l}><b>{n}</b><span>{l}</span></div>
+        {stats.map(([n, l], i) => (
+          <div className="stat" key={l} style={{ animationDelay: i * 80 + "ms" }}>
+            <b>{n}</b><span>{l}</span>
+          </div>
         ))}
       </div>
     </section>
@@ -682,12 +684,22 @@ const CSS = `
   transform:scale(0);animation:wellpop .4s cubic-bezier(.2,.9,.3,1.3) forwards;}
 @keyframes wellpop{to{transform:scale(1);}}
 
-.stat-strip{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:0;
-  margin-top:30px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
-.stat{padding:18px 4px;display:flex;flex-direction:column;gap:3px;border-right:1px solid var(--line);}
-.stat:last-child{border-right:none;}
-.stat b{font-family:'Bricolage Grotesque';font-size:34px;font-weight:700;line-height:1;}
-.stat span{font-size:12px;color:var(--slate);font-family:'IBM Plex Mono';letter-spacing:.02em;}
+.stat-strip{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:34px;}
+.stat{position:relative;overflow:hidden;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:22px 20px 20px 24px;display:flex;flex-direction:column;gap:7px;
+  box-shadow:0 1px 2px rgba(13,27,33,.04);
+  transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s,border-color .2s;
+  animation:statin .55s cubic-bezier(.2,.8,.2,1) both;}
+.stat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(var(--teal),var(--teal-d));}
+.stat::after{content:"";position:absolute;right:-30px;top:-30px;width:90px;height:90px;border-radius:50%;
+  background:radial-gradient(circle,rgba(14,140,130,.10),transparent 70%);pointer-events:none;}
+.stat:hover{transform:translateY(-4px);border-color:var(--teal);box-shadow:0 18px 34px -20px rgba(13,27,33,.45);}
+.stat b{font-family:'Bricolage Grotesque';font-size:42px;font-weight:800;line-height:1;letter-spacing:-.025em;
+  background:linear-gradient(135deg,var(--ink) 25%,var(--teal-d));
+  -webkit-background-clip:text;background-clip:text;color:transparent;}
+.stat span{font-size:11px;color:var(--slate);font-family:'IBM Plex Mono';text-transform:uppercase;letter-spacing:.11em;}
+@keyframes statin{from{opacity:0;transform:translateY(12px);}}
 
 /* view scaffolding */
 .view-pad{max-width:1240px;margin:0 auto;padding:34px 40px 10px;}
@@ -819,7 +831,6 @@ table.schema tr:last-child td{border-bottom:none;}
   .hero{grid-template-columns:1fr;padding:34px 22px 14px;}
   .hero-plate{order:-1;}
   .stat-strip{grid-template-columns:repeat(2,1fr);}
-  .stat:nth-child(2n){border-right:none;}
   .docs,.steps{grid-template-columns:1fr;}
   .submit-cta-actions{width:100%;}
   .overview{grid-template-columns:1fr;}
@@ -836,5 +847,6 @@ table.schema tr:last-child td{border-bottom:none;}
 @media (prefers-reduced-motion:reduce){
   .well{animation:none;transform:scale(1);}
   .drawer,.drawer-scrim{animation:none;}
+  .stat{animation:none;}
 }
 `;
