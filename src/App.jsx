@@ -131,7 +131,11 @@ const SCHEMA = [
   ["Num_tails",                         "number", "Number of lipid tails on the ionizable lipid", "req"],
   ["Num_carbon_in_tail",               "number", "Carbon count per tail", "req"],
   ["num_unsaturated_cc_bonds",         "number", "Total C=C bonds across all tails", "req"],
-  ["num_protonatable_nitrogens",       "number", "Count of ionizable nitrogen atoms", "req"],
+  ["num_protonatable_nitrogens",       "number", "Count of protonatable nitrogen atoms", "req"],
+  ["Lipid/Cells",                      "number", "Log-transformed ng of ionizable lipid per 1,000 cells", "req"],
+  ["NA/Cells",                         "number", "Log-transformed ng of nucleic acid per 1,000 cells", "req"],
+  ["lnMolWt",                          "number", "Log-transformed molecular weight", "req"],
+
 ];
 
 function Pill({ children, tone = "ink" }) {
@@ -199,7 +203,7 @@ function Hero({ setView }) {
     [RAW.length, "viability records"],
     [new Set(RAW.map((d) => d.ionizable)).size, "ionizable lipids"],
     [CELLS.length, "cell lines"],
-    [new Set(RAW.map((d) => d.experiment)).size, "studies"],
+    [11, "studies"],
   ];
   return (
     <section className="hero">
