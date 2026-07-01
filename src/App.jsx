@@ -393,7 +393,7 @@ function DetailDrawer({ d, onClose }) {
         <div className="grid2">
           {field("Ionizable lipid", d.ionizable)}
           {field("Helper lipid", d.helper)}
-          {field("Molar ratio (ion:phos:chol:PEG)", d.ratio, true)}
+          {field("Molar ratio (ion:helper:chol:PEG)", d.ratio, true)}
           {field("Lipid : nucleic acid", d.lipidToRNA != null ? d.lipidToRNA.toFixed(2) + " w/w" : "—", true)}
         </div>
 
