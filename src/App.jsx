@@ -6,7 +6,7 @@ import {
 } from "recharts";
 import {
   Search, Download, Upload, FlaskConical, Database, Home,
-  FileText, X, ArrowUpRight,
+  FileText, X, ArrowUpRight, Menu,
 } from "lucide-react";
 import Papa from "papaparse";
 import csvText from "./lnpcd.csv?raw";
@@ -137,8 +137,8 @@ const SCHEMA = [
   ["Num_carbon_in_tail",               "number", "Carbon count per tail", "req"],
   ["num_unsaturated_cc_bonds",         "number", "Total C=C bonds across all tails", "req"],
   ["num_protonatable_nitrogens",       "number", "Count of protonatable nitrogen atoms", "req"],
-  ["Lipid/Cells",                      "number", "Log-transformed ng of ionizable lipid per 1,000 cells", "req"],
-  ["NA/Cells",                         "number", "Log-transformed ng of nucleic acid per 1,000 cells", "req"],
+  ["lnLipid/Cells",                    "number", "ln(ng lipid / 1,000 cells) — log-transformed lipid dose per cell", "req"],
+  ["lnNA/Cells",                       "number", "ln(ng NA / 1,000 cells) — log-transformed nucleic acid dose per cell", "req"],
   ["lnLipid_concentration",            "number", "ln(ng/mL) — log-transformed ionizable lipid concentration in well", "req"],
   ["lnNA_concentration",               "number", "ln(ng/mL) — log-transformed nucleic acid concentration in well", "req"],
   ["lnMolWt",                          "number", "Log-transformed molecular weight", "req"],
@@ -180,26 +180,40 @@ function WellPlate() {
 
 /* ───────────────────────── nav ───────────────────────── */
 function Nav({ view, setView }) {
+  const [open, setOpen] = useState(false);
   const items = [
     ["home", "Home", Home],
     ["database", "Database", Database],
     ["submit", "Submit", Upload],
     ["docs", "Docs", FileText],
   ];
+  const navigate = (k) => { setView(k); setOpen(false); };
   return (
     <header className="nav">
-      <div className="brand" onClick={() => setView("home")}>
+      <div className="brand" onClick={() => navigate("home")}>
         <span className="brand-glyph"><FlaskConical size={18} strokeWidth={2.2} /></span>
         <span className="brand-word">LNPCD</span>
         <span className="brand-sub">Lipid Nanoparticle Cytotoxicity Database</span>
       </div>
       <nav className="nav-links">
         {items.map(([k, label, Icon]) => (
-          <button key={k} className={"nav-link" + (view === k ? " is-active" : "")} onClick={() => setView(k)}>
+          <button key={k} className={"nav-link" + (view === k ? " is-active" : "")} onClick={() => navigate(k)}>
             <Icon size={15} strokeWidth={2} /> {label}
           </button>
         ))}
       </nav>
+      <button className="nav-hamburger" onClick={() => setOpen((o) => !o)} aria-label="Menu">
+        {open ? <X size={20} /> : <Menu size={20} />}
+      </button>
+      {open && (
+        <div className="nav-mobile-menu">
+          {items.map(([k, label, Icon]) => (
+            <button key={k} className={"nav-link" + (view === k ? " is-active" : "")} onClick={() => navigate(k)}>
+              <Icon size={15} strokeWidth={2} /> {label}
+            </button>
+          ))}
+        </div>
+      )}
     </header>
   );
 }
@@ -678,7 +692,7 @@ const CSS = `
 /* nav */
 .nav{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:18px;
   padding:13px 26px;background:rgba(231,237,237,.86);backdrop-filter:blur(10px);
-  border-bottom:1px solid var(--line);}
+  border-bottom:1px solid var(--line);flex-wrap:wrap;}
 .brand{display:flex;align-items:baseline;gap:9px;cursor:pointer;}
 .brand-glyph{display:grid;place-items:center;width:30px;height:30px;background:var(--ink);
   color:#EAFBF8;border-radius:7px;align-self:center;}
@@ -686,9 +700,12 @@ const CSS = `
 .brand-sub{font-size:11.5px;color:var(--slate);letter-spacing:.01em;}
 .nav-links{display:flex;gap:3px;margin-left:auto;}
 .nav-link{display:flex;align-items:center;gap:6px;padding:8px 13px;border:none;background:none;
-  color:var(--slate);font-size:13.5px;font-weight:500;border-radius:7px;transition:.15s;}
+  color:var(--slate);font-size:13.5px;font-weight:500;border-radius:7px;transition:.15s;cursor:pointer;}
 .nav-link:hover{color:var(--ink);background:#fff;}
 .nav-link.is-active{color:var(--ink);background:var(--panel);box-shadow:inset 0 0 0 1px var(--line);}
+.nav-hamburger{display:none;margin-left:auto;border:none;background:none;color:var(--ink);cursor:pointer;padding:6px;border-radius:7px;}
+.nav-hamburger:hover{background:#fff;}
+.nav-mobile-menu{display:none;}
 
 .pill{font-family:'IBM Plex Mono';font-size:10px;text-transform:uppercase;letter-spacing:.1em;
   padding:4px 8px;border-radius:20px;white-space:nowrap;}
@@ -904,9 +921,13 @@ table.schema tr:last-child td{border-bottom:none;}
   .overview .chart-card:nth-child(1),
   .overview .chart-card:nth-child(2),
   .overview .chart-card:nth-child(3){grid-column:1/-1;}
-  .nav-link span{display:none;}
-  .nav-links{margin-left:0;}
   .brand-sub{display:none;}
+  .nav-links{display:none;}
+  .nav-hamburger{display:flex;align-items:center;justify-content:center;}
+  .nav-mobile-menu{display:flex;flex-direction:column;gap:4px;
+    position:absolute;top:100%;left:0;right:0;
+    background:rgba(231,237,237,.97);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);padding:10px 16px 14px;z-index:29;}
   .panel-wrap,.view-pad{padding-left:20px;padding-right:20px;}
   table.data{font-size:12.5px;}
 }
