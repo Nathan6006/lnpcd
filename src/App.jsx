@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import SmilesDrawer from "smiles-drawer";
 import {
   ResponsiveContainer, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
   Tooltip, BarChart, Bar, Cell, ZAxis, PieChart, Pie, Legend,
@@ -33,7 +34,7 @@ const COL = {
   smiles:       "smiles",
   helper:       "Helper_lipid_ID",
   ionRatio:     "Ionizable_Lipid_Mol_Ratio",
-  phosphoRatio: "Phospholipid_Mol_Ratio",
+  phosphoRatio: "Helper_Lipid_Mol_Ratio",
   cholRatio:    "Cholesterol_Mol_Ratio",
   pegRatio:     "PEG_Lipid_Mol_Ratio",
   lipidToRNA:   "Ionizable_Lipid_to_mRNA_weight_ratio",
@@ -118,7 +119,7 @@ const SCHEMA = [
   ["Lipid_name",                        "string", "Ionizable lipid identifier (e.g. SM-102, MC3)", "req"],
   ["smiles",                            "SMILES", "Canonical SMILES of the ionizable lipid", "req"],
   ["Ionizable_Lipid_Mol_Ratio",         "number", "Ionizable lipid mole fraction in formulation", "req"],
-  ["Phospholipid_Mol_Ratio",            "number", "Phospholipid (helper) mole fraction", "req"],
+  ["Helper_Lipid_Mol_Ratio",            "number", "Helper (phospholipid) mole fraction", "req"],
   ["Cholesterol_Mol_Ratio",             "number", "Cholesterol mole fraction", "req"],
   ["PEG_Lipid_Mol_Ratio",              "number", "PEG-lipid mole fraction", "req"],
   ["Helper_lipid_ID",                  "enum",   "Helper lipid identity: DOPE · DSPC · MDOA", "req"],
@@ -266,7 +267,19 @@ function DatabaseView() {
     <section className="panel-wrap">
       <div className="db-head">
         <h2 className="view-title">Database</h2>
-        <p className="db-sub">Every curated viability record. Search, filter, and open any row for the full formulation, structure, and source.</p>
+        <div className="feat-strip">
+          {[
+            [Search, "Search & filter", `Slice ${RAW.length.toLocaleString()} curated viability records by cargo, cell line, helper lipid, and viability threshold.`],
+            [FlaskConical, "Live structure diagrams", "Open any row to render the ionizable lipid as a 2D chemical structure, drawn on the fly from its SMILES."],
+            [FileText, "Sourced & reproducible", "Every record carries its full formulation, assay context, and a direct link to the source publication."],
+          ].map(([Icon, title, body], i) => (
+            <div className="feat" key={title} style={{ animationDelay: i * 90 + "ms" }}>
+              <div className="feat-ico"><Icon size={18} /></div>
+              <b>{title}</b>
+              <p>{body}</p>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="controls">
         <div className="search">
@@ -330,6 +343,25 @@ function DatabaseView() {
   );
 }
 
+function StructureDiagram({ smiles }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const host = ref.current;
+    if (!smiles || smiles === "—" || !host) return;
+    host.innerHTML = "";
+    const drawer = new SmilesDrawer.SvgDrawer({ width: 380, height: 240, compactDrawing: false, padding: 14 });
+    SmilesDrawer.parse(smiles, (tree) => {
+      const svg = drawer.draw(tree, null, "light");
+      if (svg) host.appendChild(svg);
+    }, (err) => {
+      host.innerHTML = '<span class="struct-fail">Structure could not be rendered from this SMILES.</span>';
+      console.warn("SMILES render failed:", err);
+    });
+  }, [smiles]);
+  if (!smiles || smiles === "—") return null;
+  return <div ref={ref} className="struct-svg" />;
+}
+
 function DetailDrawer({ d, onClose }) {
   const field = (k, v, mono) => (
     <div className="field"><span>{k}</span><b className={mono ? "mono" : ""}>{v}</b></div>
@@ -373,7 +405,8 @@ function DetailDrawer({ d, onClose }) {
           {field("Protonatable N", d.protonN ?? "—", true)}
         </div>
 
-        <h4>SMILES</h4>
+        <h4>Structure</h4>
+        <StructureDiagram smiles={d.smiles} />
         <div className="smiles">{d.smiles}</div>
 
         <h4>Provenance</h4>
@@ -766,6 +799,10 @@ table.data tr:hover .chev{color:var(--teal);}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px 16px;}
 .smiles{font-family:'IBM Plex Mono';font-size:11.5px;line-height:1.5;background:#fff;border:1px solid var(--line);
   border-radius:8px;padding:11px 12px;word-break:break-all;color:var(--ink);}
+.struct-svg{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:12px;
+  min-height:120px;display:flex;align-items:center;justify-content:center;padding:6px;}
+.struct-svg svg{display:block;width:100%;height:auto;max-width:380px;}
+.struct-fail{font-size:11.5px;color:var(--slate);padding:16px;text-align:center;}
 .prov{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;}
 
 /* overview (home charts) */
@@ -787,8 +824,20 @@ table.data tr:hover .chev{color:var(--teal);}
 .umap-tip b{font-family:'Bricolage Grotesque';font-size:13px;}
 
 /* database head */
-.db-head{margin:2px 0 14px;}
-.db-sub{font-size:13.5px;color:var(--slate);line-height:1.5;max-width:62ch;margin-top:4px;}
+.db-head{margin:2px 0 16px;}
+.feat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px;}
+.feat{position:relative;overflow:hidden;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:18px 18px 17px 20px;display:flex;flex-direction:column;gap:9px;
+  box-shadow:0 1px 2px rgba(13,27,33,.04);
+  transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s,border-color .2s;
+  animation:statin .55s cubic-bezier(.2,.8,.2,1) both;}
+.feat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(var(--teal),var(--teal-d));}
+.feat-ico{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;
+  background:rgba(14,140,130,.11);color:var(--teal-d);}
+.feat b{font-family:'Bricolage Grotesque';font-size:15.5px;font-weight:700;letter-spacing:-.01em;color:var(--ink);}
+.feat p{font-size:12.5px;color:var(--slate);line-height:1.5;margin:0;}
+.feat:hover{transform:translateY(-4px);border-color:var(--teal);box-shadow:0 18px 34px -20px rgba(13,27,33,.45);}
 
 /* submit */
 .submit{max-width:900px;margin:0 auto;}
@@ -835,6 +884,7 @@ table.schema tr:last-child td{border-bottom:none;}
   .hero{grid-template-columns:1fr;padding:34px 22px 14px;}
   .hero-plate{order:-1;}
   .stat-strip{grid-template-columns:repeat(2,1fr);}
+  .feat-strip{grid-template-columns:1fr;}
   .docs,.steps{grid-template-columns:1fr;}
   .submit-cta-actions{width:100%;}
   .overview{grid-template-columns:1fr;}
