@@ -48,8 +48,8 @@ const COL = {
   unsatBonds:   "num_unsaturated_cc_bonds",
   protonN:      "num_protonatable_nitrogens",
   ref:          "paper_link",
-  lipidConc:    "Lipid_concentration",
-  naConc:       "NA_concentration",
+  lipidConc:    "lnLipid_concentration",
+  naConc:       "lnNA_concentration",
 };
 
 const num = (x) => { const n = parseFloat(x); return Number.isFinite(n) ? n : null; };
@@ -139,8 +139,8 @@ const SCHEMA = [
   ["num_protonatable_nitrogens",       "number", "Count of protonatable nitrogen atoms", "req"],
   ["Lipid/Cells",                      "number", "Log-transformed ng of ionizable lipid per 1,000 cells", "req"],
   ["NA/Cells",                         "number", "Log-transformed ng of nucleic acid per 1,000 cells", "req"],
-  ["Lipid_concentration",              "number", "Ionizable lipid dose in the well (ng/mL)", "req"],
-  ["NA_concentration",                 "number", "Nucleic acid dose in the well (ng/mL)", "req"],
+  ["lnLipid_concentration",            "number", "ln(ng/mL) — log-transformed ionizable lipid concentration in well", "req"],
+  ["lnNA_concentration",               "number", "ln(ng/mL) — log-transformed nucleic acid concentration in well", "req"],
   ["lnMolWt",                          "number", "Log-transformed molecular weight", "req"],
 
 ];
@@ -405,8 +405,8 @@ function DetailDrawer({ d, onClose }) {
 
         <h4>Dose</h4>
         <div className="grid2">
-          {field("Lipid conc.", d.lipidConc != null ? d.lipidConc.toFixed(1) + " ng/mL" : "—", true)}
-          {field("NA conc.", d.naConc != null ? d.naConc.toFixed(1) + " ng/mL" : "—", true)}
+          {field("Lipid conc.", d.lipidConc != null ? Math.exp(d.lipidConc).toFixed(1) + " ng/mL" : "—", true)}
+          {field("NA conc.", d.naConc != null ? Math.exp(d.naConc).toFixed(1) + " ng/mL" : "—", true)}
         </div>
 
         <h4>Structural features</h4>
