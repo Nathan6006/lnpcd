@@ -48,6 +48,8 @@ const COL = {
   unsatBonds:   "num_unsaturated_cc_bonds",
   protonN:      "num_protonatable_nitrogens",
   ref:          "paper_link",
+  lipidConc:    "Lipid_concentration",
+  naConc:       "NA_concentration",
 };
 
 const num = (x) => { const n = parseFloat(x); return Number.isFinite(n) ? n : null; };
@@ -81,6 +83,8 @@ const RAW = Papa.parse(csvText.trim(), { header: true, skipEmptyLines: true }).d
       carbons:     num(r[COL.carbons]),
       unsatBonds:  num(r[COL.unsatBonds]),
       protonN:     num(r[COL.protonN]),
+      lipidConc:   num(r[COL.lipidConc]),
+      naConc:      num(r[COL.naConc]),
       ref:         r[COL.ref]        || "—",
     };
   });
@@ -135,6 +139,8 @@ const SCHEMA = [
   ["num_protonatable_nitrogens",       "number", "Count of protonatable nitrogen atoms", "req"],
   ["Lipid/Cells",                      "number", "Log-transformed ng of ionizable lipid per 1,000 cells", "req"],
   ["NA/Cells",                         "number", "Log-transformed ng of nucleic acid per 1,000 cells", "req"],
+  ["Lipid_concentration",              "number", "Ionizable lipid dose in the well (ng/mL)", "req"],
+  ["NA_concentration",                 "number", "Nucleic acid dose in the well (ng/mL)", "req"],
   ["lnMolWt",                          "number", "Log-transformed molecular weight", "req"],
 
 ];
@@ -395,6 +401,12 @@ function DetailDrawer({ d, onClose }) {
           {field("Helper lipid", d.helper)}
           {field("Molar ratio (ion:helper:chol:PEG)", d.ratio, true)}
           {field("Lipid : nucleic acid", d.lipidToRNA != null ? d.lipidToRNA.toFixed(2) + " w/w" : "—", true)}
+        </div>
+
+        <h4>Dose</h4>
+        <div className="grid2">
+          {field("Lipid conc.", d.lipidConc != null ? d.lipidConc.toFixed(1) + " ng/mL" : "—", true)}
+          {field("NA conc.", d.naConc != null ? d.naConc.toFixed(1) + " ng/mL" : "—", true)}
         </div>
 
         <h4>Structural features</h4>
