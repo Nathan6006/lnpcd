@@ -22,11 +22,12 @@ sample. Columns fall into five groups:
 
 **Identifiers & provenance** — `Lipid_name`, `smiles`, `Experiment_ID`, `paper_link`
 
-**Formulation** — `Ionizable_Lipid_Mol_Ratio`, `Phospholipid_Mol_Ratio`,
+**Formulation** — `Ionizable_Lipid_Mol_Ratio`, `Helper_Lipid_Mol_Ratio`,
 `Cholesterol_Mol_Ratio`, `PEG_Lipid_Mol_Ratio`, `Helper_lipid_ID`,
 `Ionizable_Lipid_to_mRNA_weight_ratio`
 
-**Ionizable-lipid descriptors** — `Num_tails`, `Num_carbon_in_tail`, `MolWt` (g/mol),
+**Ionizable-lipid descriptors** — `Num_tails`, `Num_carbon_in_tail`, `MolWt` (average
+molecular weight in g/mol, computed from the SMILES with RDKit),
 `num_unsaturated_cc_bonds`, `num_protonatable_nitrogens`
 
 **Experimental context** — `Cargo_type`, `Model_type` (cell line), `Lipid/Cells`,

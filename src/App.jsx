@@ -121,7 +121,7 @@ const SCHEMA = [
   ["Lipid_name",                        "string", "Ionizable lipid identifier (e.g. SM-102, MC3)", "req"],
   ["smiles",                            "SMILES", "Canonical SMILES of the ionizable lipid", "req"],
   ["Ionizable_Lipid_Mol_Ratio",         "number", "Ionizable lipid mole fraction in formulation", "req"],
-  ["Helper_Lipid_Mol_Ratio",            "number", "Helper (phospholipid) mole fraction", "req"],
+  ["Helper_Lipid_Mol_Ratio",            "number", "Helper lipid mole fraction", "req"],
   ["Cholesterol_Mol_Ratio",             "number", "Cholesterol mole fraction", "req"],
   ["PEG_Lipid_Mol_Ratio",              "number", "PEG-lipid mole fraction", "req"],
   ["Helper_lipid_ID",                  "enum",   "Helper lipid identity: DOPE · DSPC · MDOA", "req"],
