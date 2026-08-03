@@ -17,34 +17,33 @@ curated from **11 peer-reviewed studies**. Samples cover 4 cell lines, 2 cargo t
 Cell-line coverage: IGROV1 (741), HeLa (314), HepG2 (283), MDA-MB (75).
 
 ## 📁 Data Structure and File Format
-A single UTF-8 CSV file, `lnpcd.csv`, with **1,413 rows × 35 columns** — one row per LNP
-sample. Columns fall into six groups:
+A single UTF-8 CSV file, `lnpcd.csv`, with **1,413 rows × 21 columns** — one row per LNP
+sample. Columns fall into five groups:
 
-**Identifiers & provenance** — `Lipid_name`, `smiles`, `Formulation`, `Experiment_ID`,
-`Comment`, `paper_link`
+**Identifiers & provenance** — `Lipid_name`, `smiles`, `Experiment_ID`, `paper_link`
 
 **Formulation** — `Ionizable_Lipid_Mol_Ratio`, `Phospholipid_Mol_Ratio`,
 `Cholesterol_Mol_Ratio`, `PEG_Lipid_Mol_Ratio`, `Helper_lipid_ID`,
 `Ionizable_Lipid_to_mRNA_weight_ratio`
 
-**Ionizable-lipid descriptors** — `Num_tails`, `Num_carbon_in_tail`, `MolWt` (log-scaled),
+**Ionizable-lipid descriptors** — `Num_tails`, `Num_carbon_in_tail`, `MolWt` (g/mol),
 `num_unsaturated_cc_bonds`, `num_protonatable_nitrogens`
 
 **Experimental context** — `Cargo_type`, `Model_type` (cell line), `Lipid/Cells`,
-`NA/Cells` (log-scaled per-cell dose features)
+`NA/Cells` (ng per 1,000 cells)
 
 **Readouts / targets** — `viability` (normalized, 0–1), `unnormalized_toxicity`
 (raw viability, ~0–121%)
 
-**One-hot encodings** — `Helper_lipid_ID_{DOPE,DSPC,MDOA}`, `Cargo_type_{mRNA,siRNA}`,
-`Model_type_{HeLa,HepG2,IGROV1,MDA_MB}`
+All numeric features are given in natural units; categorical fields (`Helper_lipid_ID`,
+`Cargo_type`, `Model_type`) are left as labels rather than one-hot encoded.
 
 ## 💻 Curation Details
 * **Aggregation:** samples drawn from 11 source publications and harmonized into one schema.
 * **Standardization:** four-component molar ratios written in fixed order; helper-lipid,
-  cargo, and cell-line identities mapped to controlled vocabularies and one-hot encoded.
+  cargo, and cell-line identities mapped to controlled vocabularies.
 * **Structure encoding:** ionizable-lipid SMILES with precomputed descriptors (tail count,
-  carbons per tail, log molecular weight, C=C unsaturation, protonatable nitrogens).
+  carbons per tail, molecular weight, C=C unsaturation, protonatable nitrogens).
 * **Targets:** cytotoxicity is provided in two aligned forms — continuous normalized
   (`viability`), continuous raw (`unnormalized_toxicity`)
 

@@ -42,14 +42,13 @@ const COL = {
   cargo:        "Cargo_type",
   viability:    "viability",
   experiment:   "Experiment_ID",
-  formulation:  "Formulation",
   numTails:     "Num_tails",
   carbons:      "Num_carbon_in_tail",
   unsatBonds:   "num_unsaturated_cc_bonds",
   protonN:      "num_protonatable_nitrogens",
   ref:          "paper_link",
-  lipidConc:    "lnLipid_concentration",
-  naConc:       "lnNA_concentration",
+  lipidConc:    "Lipid_concentration",
+  naConc:       "NA_concentration",
 };
 
 const num = (x) => { const n = parseFloat(x); return Number.isFinite(n) ? n : null; };
@@ -78,7 +77,6 @@ const RAW = Papa.parse(csvText.trim(), { header: true, skipEmptyLines: true }).d
       cargo:       r[COL.cargo]      || "—",
       viability:   Math.round((num(r[COL.viability]) ?? 0) * 1000) / 10,
       experiment:  r[COL.experiment] || "—",
-      formulation: r[COL.formulation]|| "—",
       numTails:    num(r[COL.numTails]),
       carbons:     num(r[COL.carbons]),
       unsatBonds:  num(r[COL.unsatBonds]),
@@ -137,11 +135,11 @@ const SCHEMA = [
   ["Num_carbon_in_tail",               "number", "Carbon count per tail", "req"],
   ["num_unsaturated_cc_bonds",         "number", "Total C=C bonds across all tails", "req"],
   ["num_protonatable_nitrogens",       "number", "Count of protonatable nitrogen atoms", "req"],
-  ["lnLipid/Cells",                    "number", "ln(ng lipid / 1,000 cells) — log-transformed lipid dose per cell", "req"],
-  ["lnNA/Cells",                       "number", "ln(ng NA / 1,000 cells) — log-transformed nucleic acid dose per cell", "req"],
-  ["lnLipid_concentration",            "number", "ln(ng/mL) — log-transformed ionizable lipid concentration in well", "req"],
-  ["lnNA_concentration",               "number", "ln(ng/mL) — log-transformed nucleic acid concentration in well", "req"],
-  ["lnMolWt",                          "number", "Log-transformed molecular weight", "req"],
+  ["Lipid/Cells",                      "number", "ng of ionizable lipid per 1,000 cells", "req"],
+  ["NA/Cells",                         "number", "ng of nucleic acid per 1,000 cells", "req"],
+  ["Lipid_concentration",              "number", "Ionizable lipid dose in the well (ng/mL)", "req"],
+  ["NA_concentration",                 "number", "Nucleic acid dose in the well (ng/mL)", "req"],
+  ["MolWt",                            "number", "Molecular weight of the ionizable lipid (g/mol)", "req"],
 
 ];
 
@@ -405,7 +403,6 @@ function DetailDrawer({ d, onClose }) {
           <div className="readout-meta">
             {field("Cell line", d.cell)}
             {field("Cargo", d.cargo)}
-            {field("Formulation ID", d.formulation, true)}
           </div>
         </div>
 
@@ -419,8 +416,8 @@ function DetailDrawer({ d, onClose }) {
 
         <h4>Dose</h4>
         <div className="grid2">
-          {field("Lipid conc.", d.lipidConc != null ? Math.exp(d.lipidConc).toFixed(1) + " ng/mL" : "—", true)}
-          {field("NA conc.", d.naConc != null ? Math.exp(d.naConc).toFixed(1) + " ng/mL" : "—", true)}
+          {field("Lipid conc.", d.lipidConc != null ? d.lipidConc.toFixed(1) + " ng/mL" : "—", true)}
+          {field("NA conc.", d.naConc != null ? d.naConc.toFixed(1) + " ng/mL" : "—", true)}
         </div>
 
         <h4>Structural features</h4>
