@@ -17,7 +17,7 @@ curated from **11 peer-reviewed studies**. Samples cover 4 cell lines, 2 cargo t
 Cell-line coverage: IGROV1 (741), HeLa (314), HepG2 (283), MDA-MB (75).
 
 ## 📁 Data Structure and File Format
-A single UTF-8 CSV file, `lnpcd.csv`, with **1,413 rows × 21 columns** — one row per LNP
+A single UTF-8 CSV file, `lnpcd.csv`, with **1,413 rows × 29 columns** — one row per LNP
 sample. Columns fall into five groups:
 
 **Identifiers & provenance** — `Lipid_name`, `smiles`, `Experiment_ID`, `paper_link`
@@ -27,8 +27,13 @@ sample. Columns fall into five groups:
 `Ionizable_Lipid_to_mRNA_weight_ratio`
 
 **Ionizable-lipid descriptors** — `Num_tails`, `Num_carbon_in_tail`, `MolWt` (average
-molecular weight in g/mol, computed from the SMILES with RDKit),
-`num_unsaturated_cc_bonds`, `num_protonatable_nitrogens`
+molecular weight in g/mol), `num_unsaturated_cc_bonds`, `num_protonatable_nitrogens`,
+`Topological_Polar_Surface_Area` (Å²), `Hydrogen_Bond_Donors`, `LogP` (Crippen),
+`Fraction_sp3_Carbons`, `Nitrogen_Count`, `Rings`, `Aromatic_Rings`, `has_ester` (0/1).
+All are computed from the ionizable-lipid SMILES with RDKit. The descriptor set was
+pruned so that no retained pair exceeds |r| = 0.89 — size-type descriptors (heavy-atom
+count, molar refractivity, rotatable bonds, sp3 carbon count, van der Waals volume) were
+dropped as redundant with `MolWt`, and H-bond acceptor count as redundant with TPSA.
 
 **Experimental context** — `Cargo_type`, `Model_type` (cell line), `Lipid/Cells`,
 `NA/Cells` (ng per 1,000 cells)

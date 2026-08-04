@@ -140,6 +140,14 @@ const SCHEMA = [
   ["Lipid_concentration",              "number", "Ionizable lipid dose in the well (ng/mL)", "req"],
   ["NA_concentration",                 "number", "Nucleic acid dose in the well (ng/mL)", "req"],
   ["MolWt",                            "number", "Molecular weight of the ionizable lipid (g/mol)", "req"],
+  ["Topological_Polar_Surface_Area",    "number", "TPSA in Å² (Ertl); polarity of the head group", "req"],
+  ["Hydrogen_Bond_Donors",              "number", "Count of H-bond donor atoms", "req"],
+  ["LogP",                              "number", "Crippen octanol/water partition coefficient", "req"],
+  ["Fraction_sp3_Carbons",              "number", "Fsp3 — fraction of carbons that are sp3 (tail saturation)", "req"],
+  ["Nitrogen_Count",                    "number", "Total nitrogen atoms (superset of protonatable N)", "req"],
+  ["Rings",                             "number", "Total ring count", "req"],
+  ["Aromatic_Rings",                    "number", "Aromatic ring count", "req"],
+  ["has_ester",                         "0/1",    "Ester linker present in the ionizable lipid", "req"],
 
 ];
 
