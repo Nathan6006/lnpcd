@@ -49,6 +49,15 @@ const COL = {
   ref:          "paper_link",
   lipidConc:    "Lipid_concentration",
   naConc:       "NA_concentration",
+  molWt:        "MolWt",
+  tpsa:         "Topological_Polar_Surface_Area",
+  hbd:          "Hydrogen_Bond_Donors",
+  logP:         "LogP",
+  fsp3:         "Fraction_sp3_Carbons",
+  nCount:       "Nitrogen_Count",
+  rings:        "Rings",
+  aromRings:    "Aromatic_Rings",
+  hasEster:     "has_ester",
 };
 
 const num = (x) => { const n = parseFloat(x); return Number.isFinite(n) ? n : null; };
@@ -83,6 +92,15 @@ const RAW = Papa.parse(csvText.trim(), { header: true, skipEmptyLines: true }).d
       protonN:     num(r[COL.protonN]),
       lipidConc:   num(r[COL.lipidConc]),
       naConc:      num(r[COL.naConc]),
+      molWt:       num(r[COL.molWt]),
+      tpsa:        num(r[COL.tpsa]),
+      hbd:         num(r[COL.hbd]),
+      logP:        num(r[COL.logP]),
+      fsp3:        num(r[COL.fsp3]),
+      nCount:      num(r[COL.nCount]),
+      rings:       num(r[COL.rings]),
+      aromRings:   num(r[COL.aromRings]),
+      hasEster:    r[COL.hasEster] === "1",
       ref:         r[COL.ref]        || "—",
     };
   });
@@ -118,6 +136,7 @@ const PLATE = Array.from({ length: 96 }, (_, i) => {
 
 /* ───────────────────────── schema (docs) ───────────────────────── */
 const SCHEMA = [
+  ["viability",                         "number", "Normalized cell viability, 0–1 (the primary target)", "req"],
   ["Lipid_name",                        "string", "Ionizable lipid identifier (e.g. SM-102, MC3)", "req"],
   ["smiles",                            "SMILES", "Canonical SMILES of the ionizable lipid", "req"],
   ["Ionizable_Lipid_Mol_Ratio",         "number", "Ionizable lipid mole fraction in formulation", "req"],
@@ -274,6 +293,7 @@ function DatabaseView() {
   const [cargo, setCargo] = useState("all");
   const [cell, setCell] = useState("all");
   const [helper, setHelper] = useState("all");
+  const [linker, setLinker] = useState("all");
   const [vmax, setVmax] = useState(V_MAX);
   const [sel, setSel] = useState(null);
 
@@ -283,11 +303,12 @@ function DatabaseView() {
       (cargo  === "all" || d.cargo  === cargo) &&
       (cell   === "all" || d.cell   === cell) &&
       (helper === "all" || d.helper === helper) &&
+      (linker === "all" || (linker === "ester") === d.hasEster) &&
       d.viability <= vmax &&
       (!t || [d.ionizable, d.cell, d.cargo, d.experiment, d.ref, d.id]
         .some((x) => x.toLowerCase().includes(t)))
     );
-  }, [q, cargo, cell, helper, vmax]);
+  }, [q, cargo, cell, helper, linker, vmax]);
 
   return (
     <section className="panel-wrap">
@@ -295,9 +316,9 @@ function DatabaseView() {
         <h2 className="view-title">Database</h2>
         <div className="feat-strip">
           {[
-            [Search, "Search & filter", `Slice ${RAW.length.toLocaleString()} curated viability records by cargo, cell line, helper lipid, and viability threshold.`],
+            [Search, "Search & filter", `Slice ${RAW.length.toLocaleString()} curated viability records by cargo, cell line, helper lipid, ester linker, and viability threshold.`],
             [FlaskConical, "Live structure diagrams", "Open any row to render the ionizable lipid as a 2D chemical structure, drawn on the fly from its SMILES."],
-            [FileText, "Sourced & reproducible", "Every record carries its full formulation, assay context, and a direct link to the source publication."],
+            [FileText, "Sourced & reproducible", "Every record carries its full formulation, assay context, RDKit-computed lipid descriptors, and a direct link to the source publication."],
           ].map(([Icon, title, body], i) => (
             <div className="feat" key={title} style={{ animationDelay: i * 90 + "ms" }}>
               <div className="feat-ico"><Icon size={18} /></div>
@@ -330,6 +351,14 @@ function DatabaseView() {
             <option value="all">All</option>{HELPERS.map((h) => <option key={h}>{h}</option>)}
           </select>
         </label>
+        <label className="ctrl">
+          <span>Linker</span>
+          <select value={linker} onChange={(e) => setLinker(e.target.value)}>
+            <option value="all">All</option>
+            <option value="ester">Ester</option>
+            <option value="nonester">Non-ester</option>
+          </select>
+        </label>
         <label className="ctrl ctrl-range">
           <span>Viability ≤ <b>{vmax}%</b></span>
           <input type="range" min="0" max={V_MAX} value={vmax} onChange={(e) => setVmax(+e.target.value)} />
@@ -343,6 +372,7 @@ function DatabaseView() {
             <tr>
               <th>ID</th><th>Ionizable lipid</th><th>Cell line</th>
               <th>Cargo</th><th>Helper</th><th className="num">Ion mol %</th>
+              <th className="num">MolWt</th><th className="num">LogP</th>
               <th>Viability</th><th></th>
             </tr>
           </thead>
@@ -356,6 +386,8 @@ function DatabaseView() {
                 <td><span className="tag">{d.cargo}</span></td>
                 <td><span className="tag">{d.helper}</span></td>
                 <td className="num mono">{d.ionPct ? d.ionPct.toFixed(1) : "—"}</td>
+                <td className="num mono">{d.molWt != null ? Math.round(d.molWt) : "—"}</td>
+                <td className="num mono">{d.logP != null ? d.logP.toFixed(1) : "—"}</td>
                 <td><ViabilityCell v={d.viability} /></td>
                 <td className="chev"><ArrowUpRight size={14} /></td>
               </tr>
@@ -434,6 +466,18 @@ function DetailDrawer({ d, onClose }) {
           {field("Carbons / tail", d.carbons ?? "—", true)}
           {field("C=C bonds", d.unsatBonds ?? "—", true)}
           {field("Protonatable N", d.protonN ?? "—", true)}
+          {field("Total N", d.nCount ?? "—", true)}
+          {field("Rings (aromatic)", d.rings != null ? `${d.rings} (${d.aromRings ?? 0})` : "—", true)}
+          {field("Ester linker", <Pill tone={d.hasEster ? "req" : "opt"}>{d.hasEster ? "yes" : "no"}</Pill>)}
+        </div>
+
+        <h4>Physicochemical</h4>
+        <div className="grid2">
+          {field("Molecular weight", d.molWt != null ? d.molWt.toFixed(1) + " g/mol" : "—", true)}
+          {field("LogP", d.logP != null ? d.logP.toFixed(2) : "—", true)}
+          {field("TPSA", d.tpsa != null ? d.tpsa.toFixed(1) + " Å²" : "—", true)}
+          {field("Fsp³", d.fsp3 != null ? d.fsp3.toFixed(3) : "—", true)}
+          {field("H-bond donors", d.hbd ?? "—", true)}
         </div>
 
         <h4>Structure</h4>
@@ -478,6 +522,32 @@ const scatterDot = (vKey) => (props) => {
   return <circle cx={cx} cy={cy} r={3.2} fill={viabilityColor(payload[vKey])} fillOpacity={0.72} stroke="rgba(13,27,33,.18)" strokeWidth={0.4} />;
 };
 
+/* equal-count bands over a descriptor, so every bar carries the same weight */
+function quantileBands(key, n, fmt) {
+  const vals = RAW.map((d) => d[key]).filter((x) => x != null).sort((a, b) => a - b);
+  if (!vals.length) return [];
+  const edges = Array.from({ length: n + 1 }, (_, i) =>
+    vals[Math.min(vals.length - 1, Math.round((i / n) * (vals.length - 1)))]);
+  return Array.from({ length: n }, (_, i) => {
+    const lo = edges[i], hi = edges[i + 1];
+    const sub = RAW.filter((d) => d[key] != null && d[key] >= lo && (i === n - 1 ? d[key] <= hi : d[key] < hi));
+    const name = i === 0 ? `≤${fmt(hi)}` : i === n - 1 ? `>${fmt(lo)}` : `${fmt(lo)}–${fmt(hi)}`;
+    return { name, n: sub.length, mean: Math.round(sub.reduce((s, d) => s + d.viability, 0) / (sub.length || 1)) };
+  });
+}
+
+function ChemTooltip({ active, payload }) {
+  if (!active || !payload || !payload.length) return null;
+  const d = payload[0].payload;
+  return (
+    <div className="umap-tip">
+      <b>{d.lipid}</b>
+      <span className="dim">LogP {d.x.toFixed(2)} · TPSA {d.y.toFixed(1)} Å²</span>
+      <span style={{ color: viabilityColor(d.v), fontWeight: 600 }}>{Math.round(d.v)}% viable</span>
+    </div>
+  );
+}
+
 function UmapTooltip({ active, payload }) {
   if (!active || !payload || !payload.length) return null;
   const d = payload[0].payload;
@@ -519,6 +589,18 @@ function OverviewView() {
     const sub = RAW.filter((d) => d.helper === h);
     return { name: h, mean: Math.round(sub.reduce((s, d) => s + d.viability, 0) / (sub.length || 1)) };
   }), []);
+  const byLogP = useMemo(() => quantileBands("logP", 5, (x) => x.toFixed(1)), []);
+  /* one point per distinct lipid, so replicated structures don't over-plot */
+  const chemSpace = useMemo(() => {
+    const m = new Map();
+    RAW.forEach((d) => {
+      if (d.logP == null || d.tpsa == null) return;
+      const e = m.get(d.smiles) || { x: d.logP, y: d.tpsa, lipid: d.ionizable, sum: 0, n: 0 };
+      e.sum += d.viability; e.n += 1;
+      m.set(d.smiles, e);
+    });
+    return [...m.values()].map((e) => ({ ...e, v: e.sum / e.n }));
+  }, []);
 
   return (
     <section className="overview">
@@ -538,6 +620,45 @@ function OverviewView() {
             </Bar>
           </BarChart>
         </ResponsiveContainer>
+      </ChartCard>
+
+      <ChartCard title="Mean viability by lipophilicity"
+        sub="LogP quintiles · equal record counts per band">
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={byLogP} margin={{ top: 8, right: 12, bottom: 8, left: 4 }}>
+            <CartesianGrid stroke="#D7E0E0" strokeDasharray="2 4" vertical={false} />
+            <XAxis dataKey="name" tick={axisStyle} />
+            <YAxis domain={[0, 100]} tick={axisStyle} />
+            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(13,27,33,.04)" }}
+              formatter={(v, _n, p) => [`${v}%  ·  n=${p.payload.n}`, "mean viability"]} />
+            <Bar dataKey="mean" radius={[3, 3, 0, 0]} maxBarSize={84}>
+              {byLogP.map((d, i) => <Cell key={i} fill={viabilityColor(d.mean)} />)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartCard>
+
+      <ChartCard title="Lipid chemical space"
+        sub={`LogP vs TPSA · ${chemSpace.length.toLocaleString()} distinct lipids · colored by viability`}>
+        <ResponsiveContainer width="100%" height={300}>
+          <ScatterChart margin={{ top: 12, right: 18, bottom: 22, left: 6 }}>
+            <CartesianGrid stroke="#E3EAEA" strokeDasharray="2 5" />
+            <XAxis type="number" dataKey="x" tick={axisStyle} domain={[-5, 70]}
+              ticks={[0, 10, 20, 30, 40, 50, 60, 70]}
+              label={{ value: "LogP", position: "insideBottom", offset: -12, style: axisStyle }} />
+            <YAxis type="number" dataKey="y" tick={axisStyle} width={46} domain={[0, 520]}
+              ticks={[0, 100, 200, 300, 400, 500]}
+              label={{ value: "TPSA (Å²)", angle: -90, position: "insideLeft", style: axisStyle }} />
+            <ZAxis range={[18, 18]} />
+            <Tooltip content={<ChemTooltip />} cursor={false} />
+            <Scatter data={chemSpace} shape={scatterDot("v")} isAnimationActive={false} />
+          </ScatterChart>
+        </ResponsiveContainer>
+        <div className="umap-legend">
+          <span className="legend-label">cytotoxic</span>
+          <span className="legend-bar" />
+          <span className="legend-label">viable</span>
+        </div>
       </ChartCard>
 
       <ChartCard title="UMAP of the formulation space"
@@ -632,9 +753,15 @@ function DocsView() {
 
         <h2>Methodology</h2>
         <p>Records are extracted from peer-reviewed literature into structured rows, units
-          normalized (µg/mL, hours, % of untreated control), lipid names mapped to a controlled
-          vocabulary, and SMILES canonicalized. Each entry is cross-checked against its source
-          figure or table before curation.</p>
+          normalized (ng/mL, ng per 1,000 cells, % of untreated control), lipid names mapped to a
+          controlled vocabulary, and SMILES canonicalized. Each entry is cross-checked against its
+          source figure or table before curation.</p>
+        <p>Molecular descriptors — molecular weight, LogP, TPSA, Fsp³, H-bond donors, nitrogen,
+          ring and ester-linker features — are computed from the canonical SMILES with RDKit
+          rather than taken from the source papers, so they are consistent across all studies.
+          The set is pruned for collinearity: no two retained descriptors exceed |r| = 0.89, and
+          size-type descriptors (heavy atoms, molar refractivity, rotatable bonds) are omitted as
+          redundant with molecular weight.</p>
       </div>
       <aside className="docs-side">
         <div className="cite">
