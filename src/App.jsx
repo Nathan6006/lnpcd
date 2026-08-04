@@ -75,7 +75,9 @@ const RAW = Papa.parse(csvText.trim(), { header: true, skipEmptyLines: true }).d
       id:          "LNPCD-" + String(i + 1).padStart(4, "0"),
       ionizable:   r[COL.lipidName]  || "—",
       smiles:      r[COL.smiles]     || "—",
-      helper:      r[COL.helper]     || "—",
+      /* Miller_zwitter formulations carry no helper phospholipid at all
+         (Helper_Lipid_Mol_Ratio is exactly 0), so this is a real "none". */
+      helper:      r[COL.helper]     || "none",
       ratio,
       ionPct:      ionR,
       phosphoRatio: phoR,
@@ -585,11 +587,8 @@ function OverviewView() {
   const byCargo  = useMemo(() => countBy("cargo"), []);
   const byHelperN = useMemo(() => countBy("helper"), []);
   const byCell   = useMemo(() => countBy("cell"), []);
-  const byHelperMean = useMemo(() => HELPERS.map((h) => {
-    const sub = RAW.filter((d) => d.helper === h);
-    return { name: h, mean: Math.round(sub.reduce((s, d) => s + d.viability, 0) / (sub.length || 1)) };
-  }), []);
-  const byLogP = useMemo(() => quantileBands("logP", 5, (x) => x.toFixed(1)), []);
+  const byMolWt = useMemo(() => quantileBands("molWt", 5, (x) => Math.round(x)), []);
+  const byLogP = useMemo(() => quantileBands("logP", 5, (x) => Math.round(x)), []);
   /* one point per distinct lipid, so replicated structures don't over-plot */
   const chemSpace = useMemo(() => {
     const m = new Map();
@@ -608,15 +607,17 @@ function OverviewView() {
       <DonutCard title="Helper lipid" sub="records by helper identity" data={byHelperN} />
       <DonutCard title="Cell line" sub="records by model" data={byCell} />
 
-      <ChartCard title="Mean viability by helper lipid" sub="DOPE · DSPC · MDOA">
+      <ChartCard title="Mean viability by molecular weight"
+        sub="MolWt quintiles (g/mol) · equal record counts per band">
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={byHelperMean} margin={{ top: 8, right: 12, bottom: 8, left: 4 }}>
+          <BarChart data={byMolWt} margin={{ top: 8, right: 12, bottom: 8, left: 4 }}>
             <CartesianGrid stroke="#D7E0E0" strokeDasharray="2 4" vertical={false} />
             <XAxis dataKey="name" tick={axisStyle} />
             <YAxis domain={[0, 100]} tick={axisStyle} />
-            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(13,27,33,.04)" }} />
+            <Tooltip contentStyle={tooltipStyle} cursor={{ fill: "rgba(13,27,33,.04)" }}
+              formatter={(v, _n, p) => [`${v}%  ·  n=${p.payload.n}`, "mean viability"]} />
             <Bar dataKey="mean" radius={[3, 3, 0, 0]} maxBarSize={84}>
-              {byHelperMean.map((d, i) => <Cell key={i} fill={viabilityColor(d.mean)} />)}
+              {byMolWt.map((d, i) => <Cell key={i} fill={viabilityColor(d.mean)} />)}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
@@ -1060,8 +1061,32 @@ table.schema tr:last-child td{border-bottom:none;}
     position:absolute;top:100%;left:0;right:0;
     background:rgba(231,237,237,.97);backdrop-filter:blur(10px);
     border-bottom:1px solid var(--line);padding:10px 16px 14px;z-index:29;}
-  .panel-wrap,.view-pad{padding-left:20px;padding-right:20px;}
+  .panel-wrap,.view-pad{padding-left:12px;padding-right:12px;}
   table.data{font-size:12.5px;}
+
+  /* the three feature cards pushed search and the table a full screen down */
+  .feat-strip{display:none;}
+  .db-head{margin-bottom:12px;}
+  /* two-up grid: tappable full-width targets without a 700px-tall filter block */
+  .controls{display:grid;grid-template-columns:1fr 1fr;align-items:end;gap:10px 12px;}
+  .controls .search{grid-column:1/-1;min-width:0;}
+  .controls .ctrl select{width:100%;}
+  .controls .ctrl-range{grid-column:1/-1;}
+  .count{grid-column:1/-1;margin-left:0;text-align:right;}
+  /* ID, cargo, helper, ion mol% and the chevron are all redundant here —
+     the drawer carries them — so lipid, MolWt, LogP and viability fit */
+  table.data th:nth-child(1),table.data td:nth-child(1),
+  table.data th:nth-child(4),table.data td:nth-child(4),
+  table.data th:nth-child(5),table.data td:nth-child(5),
+  table.data th:nth-child(6),table.data td:nth-child(6),
+  table.data th:nth-child(8),table.data td:nth-child(8),
+  table.data th:nth-child(10),table.data td:nth-child(10){display:none;}
+  table.data{font-size:12px;}
+  table.data th,table.data td{padding-left:4px;padding-right:4px;}
+  table.data td{padding-top:11px;padding-bottom:11px;}
+  table.data th{font-size:9.5px;letter-spacing:.04em;}
+  /* wider drawer, but keep a scrim sliver so tap-outside-to-close survives */
+  .drawer{width:94vw;}
 }
 @media (prefers-reduced-motion:reduce){
   .well{animation:none;transform:scale(1);}
