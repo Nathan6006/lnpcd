@@ -17,7 +17,7 @@ curated from **11 peer-reviewed studies**. Samples cover 4 cell lines, 2 cargo t
 Cell-line coverage: IGROV1 (741), HeLa (314), HepG2 (283), MDA-MB (75).
 
 ## 📁 Data Structure and File Format
-A single UTF-8 CSV file, `lnpcd.csv`, with **1,413 rows × 29 columns** — one row per LNP
+A single UTF-8 CSV file, `lnpcd.csv`, with **1,413 rows × 31 columns** — one row per LNP
 sample. Columns fall into five groups:
 
 **Identifiers & provenance** — `Lipid_name`, `smiles`, `Experiment_ID`, `paper_link`
@@ -36,7 +36,7 @@ count, molar refractivity, rotatable bonds, sp3 carbon count, van der Waals volu
 dropped as redundant with `MolWt`, and H-bond acceptor count as redundant with TPSA.
 
 **Experimental context** — `Cargo_type`, `Model_type` (cell line), `Lipid/Cells`,
-`NA/Cells` (ng per 1,000 cells)
+`NA/Cells` (ng per 1,000 cells), `Lipid_concentration`, `NA_concentration` (ng/mL in well)
 
 **Readouts / targets** — `viability` (normalized, 0–1), `unnormalized_toxicity`
 (raw viability, ~0–121%)
