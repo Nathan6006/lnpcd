@@ -36,7 +36,7 @@ count, molar refractivity, rotatable bonds, sp3 carbon count, van der Waals volu
 dropped as redundant with `MolWt`, and H-bond acceptor count as redundant with TPSA.
 
 **Experimental context** — `Cargo_type`, `Model_type` (cell line), `Lipid/Cells`,
-`NA/Cells` (ng per 1,000 cells), `Lipid_concentration`, `NA_concentration` (ng/mL in well)
+`NA/Cells` (ng per 1,000 cells), `Lipid_concentration`, `NA_concentration` (µg/mL in well)
 
 **Readouts / targets** — `viability` (normalized, 0–1), `unnormalized_toxicity`
 (raw viability, ~0–121%)

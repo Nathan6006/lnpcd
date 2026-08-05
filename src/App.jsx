@@ -158,8 +158,8 @@ const SCHEMA = [
   ["num_protonatable_nitrogens",       "number", "Count of protonatable nitrogen atoms", "req"],
   ["Lipid/Cells",                      "number", "ng of ionizable lipid per 1,000 cells", "req"],
   ["NA/Cells",                         "number", "ng of nucleic acid per 1,000 cells", "req"],
-  ["Lipid_concentration",              "number", "Ionizable lipid dose in the well (ng/mL)", "req"],
-  ["NA_concentration",                 "number", "Nucleic acid dose in the well (ng/mL)", "req"],
+  ["Lipid_concentration",              "number", "Ionizable lipid dose in the well (µg/mL)", "req"],
+  ["NA_concentration",                 "number", "Nucleic acid dose in the well (µg/mL)", "req"],
   ["MolWt",                            "number", "Molecular weight of the ionizable lipid (g/mol)", "req"],
   ["Topological_Polar_Surface_Area",    "number", "TPSA in Å² (Ertl); polarity of the head group", "req"],
   ["Hydrogen_Bond_Donors",              "number", "Count of H-bond donor atoms", "req"],
@@ -458,8 +458,8 @@ function DetailDrawer({ d, onClose }) {
 
         <h4>Dose</h4>
         <div className="grid2">
-          {field("Lipid conc.", d.lipidConc != null ? d.lipidConc.toFixed(1) + " ng/mL" : "—", true)}
-          {field("NA conc.", d.naConc != null ? d.naConc.toFixed(1) + " ng/mL" : "—", true)}
+          {field("Lipid conc.", d.lipidConc != null ? d.lipidConc.toFixed(2) + " µg/mL" : "—", true)}
+          {field("NA conc.", d.naConc != null ? d.naConc.toFixed(2) + " µg/mL" : "—", true)}
         </div>
 
         <h4>Structural features</h4>
@@ -754,7 +754,7 @@ function DocsView() {
 
         <h2>Methodology</h2>
         <p>Records are extracted from peer-reviewed literature into structured rows, units
-          normalized (ng/mL, ng per 1,000 cells, % of untreated control), lipid names mapped to a
+          normalized (µg/mL, ng per 1,000 cells, % of untreated control), lipid names mapped to a
           controlled vocabulary, and SMILES canonicalized. Each entry is cross-checked against its
           source figure or table before curation.</p>
         <p>Molecular descriptors — molecular weight, LogP, TPSA, Fsp³, H-bond donors, nitrogen,
@@ -767,7 +767,7 @@ function DocsView() {
       <aside className="docs-side">
         <div className="cite">
           <span className="cite-label">Cite</span>
-          <p className="mono">LNPCD: a standardized database of lipid nanoparticle cytotoxicity for nucleic acid delivery. <i>Draft, 2026.</i></p>
+          <p className="mono">Liu, N. et al. LNPCD: A Standardized Cytotoxicity Dataset for Data-driven Design of Ionizable Lipid Nanoparticles.  10.5281/zenodo.21071179 (2026).</p>
         </div>
         <div className="cite">
           <span className="cite-label">License</span>
