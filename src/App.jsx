@@ -9,7 +9,7 @@ import {
   FileText, X, ArrowUpRight, Menu,
 } from "lucide-react";
 import Papa from "papaparse";
-import csvText from "./lnpcd.csv?raw";
+import csvText from "../lnpcd.csv?raw";
 import UMAP from "./umap.json";
 
 /* ───────────────────────── viability colormap ─────────────────────────
@@ -139,22 +139,22 @@ const PLATE = Array.from({ length: 96 }, (_, i) => {
 /* ───────────────────────── schema (docs) ───────────────────────── */
 const SCHEMA = [
   ["viability",                         "number", "Normalized cell viability, 0–1 (the primary target)", "req"],
-  ["Lipid_name",                        "string", "Ionizable lipid identifier (e.g. SM-102, MC3)", "req"],
+  ["Lipid_name",                        "string", "Ionizable lipid identifier (e.g. MC3, 4A3-SC5)", "req"],
   ["smiles",                            "SMILES", "Canonical SMILES of the ionizable lipid", "req"],
   ["Ionizable_Lipid_Mol_Ratio",         "number", "Ionizable lipid mole fraction in formulation", "req"],
   ["Helper_Lipid_Mol_Ratio",            "number", "Helper lipid mole fraction", "req"],
   ["Cholesterol_Mol_Ratio",             "number", "Cholesterol mole fraction", "req"],
   ["PEG_Lipid_Mol_Ratio",              "number", "PEG-lipid mole fraction", "req"],
-  ["Helper_lipid_ID",                  "enum",   "Helper lipid identity: DOPE · DSPC · MDOA", "req"],
+  ["Helper_lipid_ID",                  "enum",   "Helper lipid identity: DOPE · DSPC · MDOA; blank means not reported", "opt"],
   ["Ionizable_Lipid_to_mRNA_weight_ratio", "number", "Lipid-to-RNA weight ratio", "req"],
   ["Model_type",                        "enum",   "Cell line: HeLa · HepG2 · IGROV1 · MDA_MB", "req"],
   ["Cargo_type",                        "enum",   "Nucleic acid cargo: mRNA · siRNA", "req"],
-  ["unnormalized_toxicity",             "number", "Cell viability % vs. untreated control", "req"],
+  ["viability_raw_percent",             "number", "Cell viability % vs. untreated control", "req"],
   ["Experiment_ID",                     "string", "Study identifier linking records to a publication", "req"],
   ["paper_link",                        "URL",    "DOI / journal link to source paper", "req"],
   ["Num_tails",                         "number", "Number of lipid tails on the ionizable lipid", "req"],
-  ["Num_carbon_in_tail",               "number", "Carbon count per tail", "req"],
-  ["num_unsaturated_cc_bonds",         "number", "Total C=C bonds across all tails", "req"],
+  ["Num_carbon_in_tail",               "number", "Carbons in the longest unbroken run of non-ring carbons — the longer tail in an asymmetric lipid", "req"],
+  ["num_unsaturated_cc_bonds",         "number", "Unsaturated carbon-carbon bonds (C=C and C#C) in the ionizable lipid.", "req"],
   ["num_protonatable_nitrogens",       "number", "Count of protonatable nitrogen atoms", "req"],
   ["Lipid/Cells",                      "number", "ng of ionizable lipid per 1,000 cells", "req"],
   ["NA/Cells",                         "number", "ng of nucleic acid per 1,000 cells", "req"],
@@ -465,8 +465,8 @@ function DetailDrawer({ d, onClose }) {
         <h4>Structural features</h4>
         <div className="grid2">
           {field("Tails", d.numTails ?? "—", true)}
-          {field("Carbons / tail", d.carbons ?? "—", true)}
-          {field("C=C bonds", d.unsatBonds ?? "—", true)}
+          {field("Longest C chain", d.carbons ?? "—", true)}
+          {field("C=C / C#C bonds", d.unsatBonds ?? "—", true)}
           {field("Protonatable N", d.protonN ?? "—", true)}
           {field("Total N", d.nCount ?? "—", true)}
           {field("Rings (aromatic)", d.rings != null ? `${d.rings} (${d.aromRings ?? 0})` : "—", true)}
@@ -737,7 +737,7 @@ function DocsView() {
     <section className="docs">
       <div className="docs-main">
         <h2>Schema</h2>
-        <p className="lede">Every record reconciles one viability readout to its full formulation and assay context.</p>
+        <p className="lede">Every record pairs one viability readout with its formulation and assay context as reported by the source study.</p>
         <table className="schema">
           <thead><tr><th>Field</th><th>Type</th><th>Description</th><th></th></tr></thead>
           <tbody>
@@ -796,7 +796,7 @@ export default function App() {
         {view === "docs" && <div className="view-pad"><DocsView /></div>}
       </main>
       <footer className="foot">
-        <span className="mono">LNPCD · © 2026 Nathan Liu. All Rights Reserved.</span>
+        <span className="mono">LNPCD by Nathan Liu · Dataset licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">CC BY 4.0</a> · App code MIT</span>
       </footer>
     </div>
   );
@@ -1041,6 +1041,7 @@ table.schema tr:last-child td{border-bottom:none;}
 /* footer */
 .foot{max-width:1240px;margin:30px auto 0;padding:20px 40px 34px;display:flex;justify-content:space-between;
   border-top:1px solid var(--line);font-size:12px;color:var(--slate);}
+.foot a{color:var(--teal-d);}
 
 @media (max-width:880px){
   .hero{grid-template-columns:1fr;padding:34px 22px 14px;}
