@@ -767,7 +767,7 @@ function DocsView() {
       <aside className="docs-side">
         <div className="cite">
           <span className="cite-label">Cite</span>
-          <p className="mono">Liu, N. et al. LNPCD: A Standardized Cytotoxicity Dataset for Data-driven Design of Ionizable Lipid Nanoparticles.  10.5281/zenodo.21071179 (2026).</p>
+          <p className="mono">Liu, N. et al. LNPCD: A Standardized Cytotoxicity Dataset for Data-driven Design of Ionizable Lipid Nanoparticles.  10.5281/zenodo.23428876 (2026).</p>
         </div>
         <div className="cite">
           <span className="cite-label">License</span>

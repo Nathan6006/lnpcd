@@ -73,7 +73,7 @@ writes their canonical SMILES lives in a separate repository.
 
 * **Interactive database:** https://lnpcd.pages.dev
 * **Structure-generation code:** https://github.com/Nathan6006/LNPCD-SMILES
-* **Dataset archive (DOI):** https://doi.org/10.5281/zenodo.21071179
+* **Dataset archive (DOI):** https://doi.org/10.5281/zenodo.23428876
 
 ## 📧 Contact
 For questions regarding the dataset or the associated study, please contact:
